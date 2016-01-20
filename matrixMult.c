@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -19,7 +20,7 @@ void  multiplyMatrix(Matrices *m){
 			m->result[i] += m->a[j+(i/m->size)*m->size]*m->b[j*m->size+i%m->size];
 		} 
 	}
-	printf("the multiplication of two matrices of size %d took %lf s\n",m->size,(double)(clock()-starting_time)*(double)1000/CLOCKS_PER_SEC);
+	printf("%.12f\n",(clock()-starting_time)/CLOCKS_PER_SEC);
 }
 
 void  multiplyMatrixT(Matrices *m){
@@ -31,7 +32,7 @@ void  multiplyMatrixT(Matrices *m){
 			m->result[i] += m->a[j+(i/m->size)*m->size]*m->b[j+(i%m->size)*m->size];
 		} 
 	}
-	printf("the multiplication of two matrices of size %d took %lf s\n",m->size,(double)(clock()-starting_time)*(double)1000/CLOCKS_PER_SEC);
+	printf("%.12f\n",(double)(clock()-starting_time)/CLOCKS_PER_SEC);
 }
 
 int readFiles(char* file1,char* file2, Matrices *m){
@@ -71,29 +72,40 @@ int readFiles(char* file1,char* file2, Matrices *m){
 }
 
 int main(int argc,char** argv){
-  if(argc < 3 ){
-		printf("this program takes at least 3 parameters\n"); 
-		printf("      -f <file1> <file2> [-p]\n");
-		return 1;
-	}
-  printf("%s %d\n",argv[3],argc);
+  if(argc < 4 || argc > 5)
+    return 1;
+
+  int verbose = 0;
   Matrices m;
-	readFiles(argv[1],argv[2],&m);
+
+  int i = 0;
+  for( i = 0 ; i < argc ; i++){
+    if(strcmp(argv[i],"-p") == 0)
+      verbose = 1;
+    if(strcmp(argv[i],"-f") == 0){
+      if( argc - i < 3){
+        printf("You have to specify two files\n");
+        return 1;
+      }
+      else{
+	      readFiles(argv[i+1],argv[i+2],&m);
+        i+=2;
+      }
+    }
+  }
+
 #ifdef conventionnel
   multiplyMatrix(&m);
 #endif
 #ifdef conventionnelT
 	multiplyMatrixT(&m);
 #endif
-  if(argc >= 4){
-    if(strcmp(argv[3],"-p") == 0){
-      int i;	
-  	  for( i = 0 ; i < m.size*m.size; i++){
-		  	printf("%d\t",m.result[i]);
-		  	if(i%m.size == m.size - 1)
-			  	printf("\n");
- 	    }
-    }
+  if(verbose){
+  for( i = 0 ; i < m.size*m.size; i++){
+	 	printf("%d\t",m.result[i]);
+	 	if(i%m.size == m.size - 1)
+	  	printf("\n");
+ 	  }
   }
 	return 0;
 }
